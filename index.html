@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Document</title>
+    <style>
+        #view-items-block {
+            text-align: justify;
+        }
+        @media screen and (max-width: 780px) {
+            #view-items-block {
+                text-align: center;
+            }
+        }
+        .view-item {
+            width: 170px;
+            height: 210px;
+            border-style: solid;
+            display: inline-block;
+            margin: 5px;
+            text-align: center;
+        }
+        .view-item-img {
+            width: 170px;
+            height: 160px;
+        }
+        .view-item-h5 {
+            text-align: center;
+            margin: 2px;
+            position: absolute;
+            max-width: 165px;
+        }
+    </style>
+</head>
+<body>
+  <a name="anchorTop"></a>
+  <div id="pageContent">
+      
+  </div>
+   
+</body>
+
+<script>
+   //Открывает вкладку одного элемента
+    function ShowAllItemsInfo() {
+        document.location.href = '#anchorTop';
+        document.getElementById("pageContent").innerHTML = "";
+        
+        let btnClose = document.createElement('input');
+        btnClose.type = 'button';
+        btnClose.value = 'Close';
+        btnClose.onclick = showViewItems;
+        
+        let div = document.createElement('div');
+        div.innerHTML = "<h1>Имя Фамилия Отчество</h1><h3>Дата рождения</h3>";
+        document.getElementById("pageContent").append(btnClose, div);
+    }
+    
+    //Показывает все элементы
+    function showViewItems() {
+        document.location.href = '#anchorTop';
+        document.getElementById("pageContent").innerHTML = "";
+        let div = document.createElement('div');
+        div.id = 'view-items-block';
+        document.getElementById("pageContent").append(div);
+        
+        for (let i = 0; i < people.length; i++) {
+        showViewItem(people[i])
+        }
+    }
+    // Отрисовывает один элемент
+    function showViewItem(fullName, image="https://i.pinimg.com/474x/8e/8d/d0/8e8dd0868c61806e1c24bc8dd3ec0d91.jpg") {
+        let div = document.createElement('div');
+        div.className = "view-item";
+        let img = document.createElement('img');
+        img.className = "view-item-img";
+        img.src=image;
+        let h5 = document.createElement('h5');
+        h5.textContent = fullName;
+        h5.className = "view-item-h5";
+        
+        div.append(img, h5);
+        div.onclick = ShowAllItemsInfo;
+        let viewItemsBlock = document.getElementById('view-items-block');
+        viewItemsBlock.append(div);
+    }
+    
+    let people = [
+        'Иванов Иван Иванович',
+        'Мухин Владислав Владимирович',
+        "Знатьев Антон Сергеевич",
+        "Владиславско-Калужский Даниил Владмирович",
+        "Колпакова Кристина Генадьевна",
+        "Рубцов Андрей Андреевич",
+        "Ведомых Екатерина Игоревна",
+        "Мухасранских Евгений Акимович"
+        ]
+    
+    
+    //Сработает при открытие страницы
+    showViewItems();
+</script>
+
+</html>
+
+
+<!--
+<script>
+    $(document).ready(function(){
+        $.getJSON("https://docs.google.com/spreadsheets/d/1GUVhqNDLWUf6hCFyAedxDmlWA2t9Y38IIpfAt0mzO48/od6/public/values?alt=json", function(data){
+            
+        })
+    })
+</script>
+-->
