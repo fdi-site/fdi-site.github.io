@@ -39,183 +39,31 @@
   </div>
    
 </body>
-<script src="https://apis.google.com/js/api.js"
-    onload="this.onload=function(){}; gapi.load('client:auth2', initClient)"
-    onreadystatechange="if (this.readyState === 'complete') this.onload()">
-</script>
+<script src="https://apis.google.com/js/api.js"></script>
 <script>
-    
-    // Интервал между синхронизациями конфига
-const SYNC_PERIOD = 1000 * 60 * 3     // 3 минуты
-// Конфигурация по умолчанию
-const DEFAULT_CONFIG = {
-    // ...
-}
-
-// храним ID таймера синхронизации, чтобы иметь возможность его сбросить
-let configSyncTimeoutId
-
-async function getConfigFileId() {
-    // берем configFileId
-    let configFileId = localStorage.getItem('configFileId')
-    if (!configFileId) {
-        // ищем нужный файл на Google Drive
-        const configFiles = await find('name = "config.json"')
-        if (configFiles.length > 0) {
-            // берем первый (раньше всех созданный) файл
-            configFileId = configFiles[0].id
-        } else {
-            // создаем новый
-            configFileId = await createEmptyFile('config.json')
-        }
-        // сохраняем ID
-        localStorage.setItem('configFileId', configFileId)
-    }
-    return configFileId
-}
-
-async function onSignIn() {
-    // обработчик события логина/логаута (см. выше)
-    if (isLoggedIn()) {
-        // пользователь зашел
-        // шедулим (как это по-русски?) немедленную синхронизацию конфига
-        scheduleConfigSync(0)
-    } else {
-        // пользователь вышел
-        // в следующий раз пользователь может зайти под другим аккаунтом
-        // поэтому забываем config file ID
-        localStorage.removeItem('configFileId')
-        // в localStorage лежит актуальный конфиг, дальше пользуемся им
-    }
-}
-
-function getConfig() {
-    let ret
-    try {
-        ret = JSON.parse(localStorage.getItem('config'))
-    } catch(e) {}
-    // если сохраненного конфига нет, возвращаем копию дефолтного
-    return ret || {...DEFAULT_CONFIG}
-}
-
-async function saveConfig(newConfig) {
-    // эту функцию зовем всегда, когда надо изменить конфиг
-    localStorage.setItem('config', JSON.stringify(newConfig))
-    if (isLoggedIn()) {
-        // получаем config file ID
-        const configFileId = await getConfigFileId()
-        // заливаем новый конфиг в Google Drive
-        upload(configFileId, newConfig)
-    }
-}
-
-async function syncConfig() {
-    if (!isLoggedIn()) {
-        return
-    }
-    // получаем config file ID
-    const configFileId = await getConfigFileId()
-    try {
-        // загружаем конфиг
-        const remoteConfig = await download(configFileId)
-        if (!remoteConfig || typeof remoteConfig !== 'object') {
-            // пустой или испорченный конфиг, перезаписываем текущим
-            upload(configFileId, getConfig())
-        } else {
-            // сохраняем локально, перезаписывая существующие данные
-            localStorage.setItem('config', JSON.stringify(remoteConfig))
-        }
-        // синхронизация завершена, в localStorage актуальный конфиг
-    } catch(e) {
-        if (e.status === 404) {
-            // кто-то удалил наш конфиг, забываем неверный fileID и пробуем еще раз
-            localStorage.removeItem('configFileId')
-            syncConfig()
-        } else {
-            throw e
-        }
-    }
-}
-
-function scheduleConfigSync(delay) {
-    // сбрасываем старый таймер, если он был
-    if (configSyncTimeoutId) {
-        clearTimeout(configSyncTimeoutId)
-    }
-    configSyncTimeoutId = setTimeout(() => {
-        // выполняем синхронизацию и шедулим снова
-        syncConfig()
-            .catch(e => console.log('Failed to synchronize config', e))
-            .finally(() => scheduleSourcesSync())
-    }, typeof delay === 'undefined' ? SYNC_PERIOD : delay)
-}
-
-function initApp() {
-    // запускаем синхронизацию при старте приложения
-    scheduleConfigSync()
-}
-    
-    
-    
-   //Открывает вкладку одного элемента
-    function ShowAllItemsInfo() {
-        document.location.href = '#anchorTop';
-        document.getElementById("pageContent").innerHTML = "";
-        
-        let btnClose = document.createElement('input');
-        btnClose.type = 'button';
-        btnClose.value = 'Close';
-        btnClose.onclick = showViewItems;
-        
-        let div = document.createElement('div');
-        div.innerHTML = "<h1>Имя Фамилия Отчество</h1><h3>Дата рождения</h3>";
-        document.getElementById("pageContent").append(btnClose, div);
-    }
-    
-    //Показывает все элементы
-    function showViewItems() {
-        document.location.href = '#anchorTop';
-        document.getElementById("pageContent").innerHTML = "";
-        let div = document.createElement('div');
-        div.id = 'view-items-block';
-        document.getElementById("pageContent").append(div);
-        
-        for (let i = 0; i < people.length; i++) {
-        showViewItem(people[i])
-        }
-    }
-    // Отрисовывает один элемент
-    function showViewItem(fullName, image="https://i.pinimg.com/474x/8e/8d/d0/8e8dd0868c61806e1c24bc8dd3ec0d91.jpg") {
-        let div = document.createElement('div');
-        div.className = "view-item";
-        let img = document.createElement('img');
-        img.className = "view-item-img";
-        img.src=image;
-        let h5 = document.createElement('h5');
-        h5.textContent = fullName;
-        h5.className = "view-item-h5";
-        
-        div.append(img, h5);
-        div.onclick = ShowAllItemsInfo;
-        let viewItemsBlock = document.getElementById('view-items-block');
-        viewItemsBlock.append(div);
-    }
-    
-    let people = [
-        'Иванов Иван Иванович',
-        'Мухин Владислав Владимирович',
-        "Знатьев Антон Сергеевич",
-        "Владиславско-Калужский Даниил Владмирович",
-        "Колпакова Кристина Генадьевна",
-        "Рубцов Андрей Андреевич",
-        "Ведомых Екатерина Игоревна",
-        "Мухасранских Евгений Акимович"
-        ]
-    
-    
-    //Сработает при открытие страницы
-    showViewItems();
+function start() {
+  // 2. Initialize the JavaScript client library.
+  gapi.client.init({
+    'apiKey': 'AIzaSyAns0mstgUJHRFdpDZ4kKHDHArv1nnPhCU',
+    // clientId and scope are optional if auth is not required.
+    'clientId': '562271142732-iojl9gpkumicajq4b9ep3lhj7tv7ml6k.apps.googleusercontent.com',
+    'scope': 'profile',
+  }).then(function() {
+    // 3. Initialize and make the API request.
+    return gapi.client.request({
+      'path': 'https://people.googleapis.com/v1/people/me?requestMask.includeField=person.names',
+    })
+  }).then(function(response) {
+    console.log(response.result);
+  }, function(reason) {
+    console.log('Error: ' + reason.result.error.message);
+  });
+};
+// 1. Load the JavaScript client library.
+gapi.load('client', start);
 </script>
+    
+
 
 </html>
 
